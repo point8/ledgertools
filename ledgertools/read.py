@@ -1,3 +1,4 @@
+import sys
 import math
 import datetime
 
@@ -14,7 +15,12 @@ def get_transactions(group):
         t = [x for x in t.split('  ') if x]
 
         account = t[0]
-        value = float(t[1].split()[0].replace(',', '.'))
+        try:
+            value = float(t[1].split()[0].replace(',', '.'))
+        except IndexError as err:
+            print(f'ERROR: {err} for entry {group}\n Account/Amount pair {t} could not be splitted, '
+                  f'possibly due to less then two spaces separation')
+            sys.exit(1)
         date = [x.replace(';', '').replace('date:', '').strip()
                 for x in t[2:] if x not in [';']]
 
