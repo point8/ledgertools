@@ -77,7 +77,7 @@ def read_file(in_file):
     groups = []
     group = []
     for l in lines:
-        if not l:
+        if not l.strip():  # .strip handles lines with only spaces as chars
             groups.append(group)
             group = []
         else:
