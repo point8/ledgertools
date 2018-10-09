@@ -84,7 +84,7 @@ class Ledger():
             return None
 
     def _parse_posting(self, string):
-        parts = [p for p in string.split(' ') if p]
+        parts = [p.strip() for p in string.split(' ') if p]
 
         account = parts[0]
         try:
@@ -100,8 +100,12 @@ class Ledger():
         # check for posting date
         secondary_date = None
         if 'date' in tags.keys():
-            secondary_date = pendulum.parse(tags['date']).date()
-            del tags['date']
+            try:
+                secondary_date = pendulum.parse(tags['date']).date()
+                del tags['date']
+            except:
+                print(parts)
+                raise
         return dict(account=account,
                     amount=amount,
                     tags=tags,
