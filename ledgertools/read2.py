@@ -5,6 +5,7 @@ import pendulum
 
 from tqdm import tqdm
 
+# regex copied from https://github.com/Tagirijus/ledger-parse
 PAT_TRANSACTION_DATA = re.compile(r'(?P<year>\d{4})[/|-](?P<month>\d{2})[/|-](?P<day>\d{2})(?:=(?P<year_aux>\d{4})[/|-](?P<month_aux>\d{2})[/|-](?P<day_aux>\d{2}))? (?P<state>[\*|!])?[ ]?(\((?P<code>[^\)].+)\) )?(?P<payee>.+)')
 PAT_COMMENT = re.compile(r';(.+)')
 PAT_TAG = re.compile('(?:\s|^)(\S+):([^,]+)?(?:,|$)')
