@@ -32,8 +32,8 @@ def read(in_file, name, as_pickle, stdout):
         with open(name, 'w', encoding='utf-8') as out_file:
             json.dump(transactions, out_file, sort_keys=True, indent=4, ensure_ascii=False)
 
-
-    click.secho(f'Saving output to: {name}', fg='green')
+    if not stdout:
+        click.secho(f'Saving output to: {name}', fg='green')
 
 
 def main():
