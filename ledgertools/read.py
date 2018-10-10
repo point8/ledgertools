@@ -163,13 +163,17 @@ class Ledger():
 
         transactions = []
         group = []
+
         for line in lines:
-           if not line.strip():  # .strip handles lines with only spaces as chars
+            if not line.strip():  # .strip handles lines with only spaces as chars
                transactions.append(group)
                group = []
-           else:
+            else:
                group.append(line)
+        # add last group
+        transactions.append(group)
         transactions = [g for g in transactions if g]
+
         return self._import_raw_transactions(transactions)
 
 
