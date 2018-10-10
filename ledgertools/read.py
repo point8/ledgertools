@@ -13,10 +13,12 @@ PAT_TAG = re.compile('(?:\s|^)(\S+):([^,]+)?(?:,|$)')
 class Ledger():
     """Holds all transactions
     """
-    def __init__(self, raw_transactions=None):
+    def __init__(self, ledger_filename=None, raw_transactions=None):
         self._transactions = []
         if raw_transactions is not None:
             self._transactions = self._import_raw_transactions(raw_transactions)
+        if ledger_filename is not None:
+            self._transactions = self.import_ledger_file(ledger_filename)
 
     @property
     def json(self):
@@ -90,7 +92,7 @@ class Ledger():
         try:
             amount = float(parts[1].replace(',', '.'))
         except:
-            print(parts)
+            print(string, parts)
             raise
 
         # check for tags
@@ -137,6 +139,26 @@ class Ledger():
 
         return transactions
 
+    def import_ledger_file(self, filename):
+        with open(filename, 'r') as in_file:
+            lines = in_file.readlines()
+
+        # remove newline at EOL
+        # remove global comments
+        # strip whitespace
+        lines = [l.replace('\n', '').strip() for l in lines if not l[0].strip() in [';', 'Y']]
+
+        transactions = []
+        group = []
+        for line in lines:
+           if not line.strip():  # .strip handles lines with only spaces as chars
+               transactions.append(group)
+               group = []
+           else:
+               group.append(line)
+        transactions = [g for g in transactions if g]
+        return self._import_raw_transactions(transactions)
+
 
 class Transaction():
     """Represents a transaction and contains at least two postings
@@ -151,9 +173,9 @@ class Transaction():
         self._postings = []
 
     def __str__(self):
-        header = f'{self._header["date"]} {self._header["status"]} ({self._header["code"]}) {self._header["description"]}'
-        h_tags = ', '.join([f'{k}:{v}' for k,v in self._header['tags'].items()])
-        h_comment = self._header["comment"]
+        header = f'{self.date} {self.status} ({self.code}) {self.description}'
+        h_tags = ', '.join([f'{k}:{v}' for k,v in self.tags.items()])
+        h_comment = self.comment
         postings = ''
         for posting in self._postings:
             postings += f'\t{posting.__repr__()}\n'
@@ -178,6 +200,11 @@ class Transaction():
 
     @property
     def date(self):
+        try:
+            self._header['primary_date'].isoformat()
+        except:
+            print(self.header)
+            raise
         return self._header['primary_date'].isoformat()
 
     @property
@@ -249,24 +276,4 @@ class Posting():
     
 
 def read_file(in_file):
-    with open(in_file, 'r') as in_file:
-        lines = in_file.readlines()
-
-    # remove newline at EOL
-    # remove global comments
-    # strip whitespace
-    lines = [l.replace('\n', '').strip() for l in lines if not l[0].strip() in [';', 'Y']]
-
-    transactions = []
-    group = []
-    for line in lines:
-       if not line.strip():  # .strip handles lines with only spaces as chars
-           transactions.append(group)
-           group = []
-       else:
-           group.append(line)
-    transactions = [g for g in transactions if g]
-
-    ledger = Ledger(transactions)
-
-    return ledger.json
+    return Ledger(ledger_filename=in_file).json
