@@ -10,7 +10,7 @@ def valid_accounts():
             lines = infile.readlines()
         return [line.rstrip() for line in lines]
     except:
-        print('No ".valid_accounts" file found!')
+        #print('No ".valid_accounts" file found!')
         return []
 
 def transaction_checks():
@@ -23,6 +23,6 @@ def check_sum_is_zero(transaction, abs_tol=0.001):
 def check_valid_accounts(transaction):
     invalid_accounts = []
     for posting in transaction.postings:
-        if posting.account not in valid_accounts():
+        if posting.account not in valid_accounts() and valid_accounts():
             invalid_accounts.append(posting.account)
     return len(invalid_accounts) < 1, f'Invalid account names: {invalid_accounts}'
