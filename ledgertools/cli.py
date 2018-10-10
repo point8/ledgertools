@@ -15,10 +15,11 @@ def cli():
 @click.option('-f', '--file', 'in_file', help='Input file name', prompt='Input file name')
 @click.option('-n', '--name', default='transactions.json', help='Output file name')
 @click.option('-p', '--pickle', 'as_pickle', is_flag=True, help='Output as pickle file')
+@click.option('--run-checks', 'run_checks', is_flag=True, help='Run standard checks on data')
 @click.option('--stdout', is_flag=True, help='Output to stdout, supresses output files')
-def read(in_file, name, as_pickle, stdout):
+def read(in_file, name, as_pickle, run_checks, stdout):
     click.secho(f'Reading input file: {in_file}', fg='green')
-    transactions = read_file(in_file)
+    transactions = read_file(in_file, run_checks)
 
     if stdout:
         print(json.dumps(transactions, sort_keys=True, indent=4, ensure_ascii=False))

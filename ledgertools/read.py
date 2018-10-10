@@ -4,6 +4,8 @@ import math
 import pendulum
 
 from tqdm import tqdm
+from ledgertools.checks import transaction_checks, CheckFailed
+
 
 # regex copied from https://github.com/Tagirijus/ledger-parse
 PAT_TRANSACTION_DATA = re.compile(r'(?P<year>\d{4})[/|-](?P<month>\d{2})[/|-](?P<day>\d{2})(?:=(?P<year_aux>\d{4})[/|-](?P<month_aux>\d{2})[/|-](?P<day_aux>\d{2}))? (?P<state>[\*|!])?[ ]?(\((?P<code>[^\)].+)\) )?(?P<payee>.+)')
@@ -15,10 +17,10 @@ class Ledger():
     """
     def __init__(self, ledger_filename=None, raw_transactions=None):
         self._transactions = []
-        if raw_transactions is not None:
-            self._transactions = self._import_raw_transactions(raw_transactions)
         if ledger_filename is not None:
             self._transactions = self.import_ledger_file(ledger_filename)
+        if raw_transactions is not None:
+            self._transactions = self._import_raw_transactions(raw_transactions)
 
     @property
     def json(self):
@@ -27,6 +29,17 @@ class Ledger():
     @property
     def transactions(self):
         return self._transactions
+
+    def run_checks(self, strict=True):
+        n_checks_failed = 0
+        for transaction in self._transactions:
+            for check in transaction_checks():
+                success, info = transaction.run_checks(check)
+                if not success:
+                    n_checks_failed += 1
+                    print(f'{check.__name__} failed for transaction\n {transaction}{info}')
+        if n_checks_failed > 0 and strict:
+            raise CheckFailed(f'{n_checks_failed} checks failed')
 
     def _parse_tags(self, string):
         tags = {}
@@ -187,7 +200,7 @@ class Transaction():
                     status=self.status,
                     code=self.code,
                     description=self.description,
-                    transactions=[p.json for p in self.postings],
+                    postings=[p.json for p in self.postings],
                     comment=self.comment)
 
     @property
@@ -234,6 +247,9 @@ class Transaction():
     def add_posting(self, posting):
         self._postings.append(posting)
 
+    def run_checks(self, check):
+        return check(self)
+
 
 class Posting():
     """Represents a single posting
@@ -275,5 +291,8 @@ class Posting():
             return self._primary_date.isoformat()
     
 
-def read_file(in_file):
-    return Ledger(ledger_filename=in_file).json
+def read_file(in_file, run_checks=False):
+    ledger = Ledger(ledger_filename=in_file)
+    if run_checks:
+        ledger.run_checks(strict=False)
+    return ledger.json
