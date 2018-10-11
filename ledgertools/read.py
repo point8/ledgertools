@@ -298,5 +298,5 @@ class Posting():
 def read_file(in_file, run_checks=False):
     ledger = Ledger(ledger_filename=in_file)
     if run_checks:
-        ledger.run_checks(strict=False)
+        ledger.run_checks()
     return ledger.json
