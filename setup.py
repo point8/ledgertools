@@ -25,5 +25,5 @@ setup(
         ]
     },
     package_data={},
-    install_requires=['tqdm', 'click'],
+    install_requires=['tqdm', 'click', 'pendulum'],
 )
