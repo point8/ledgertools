@@ -147,7 +147,11 @@ class Ledger():
                         continue
 
                 # find postings
-                t.add_posting(Posting(**self._parse_posting(line), primary_date=t.header['primary_date']))
+                try:
+                    t.add_posting(Posting(**self._parse_posting(line), primary_date=t.header['primary_date']))
+                except:
+                    print(transaction)
+                    raise
             transactions.append(t)
 
         return transactions
